@@ -83,7 +83,9 @@ class CoreVPCInfrastructure(Construct):
             ],
         )
 
-    def add_mesh_routes(self, router_instance_id, vpn_endpoint_addr):
+    def add_mesh_routes(
+        self, router_instance_id, vpn_endpoint_addrs, wg_server_provided_conditions
+    ):
         # Add routes to the mesh
         for i, cidr in enumerate(MESH_CIDRS):
             ec2.CfnRoute(
@@ -94,15 +96,18 @@ class CoreVPCInfrastructure(Construct):
                 instance_id=router_instance_id,
             )
 
-        # Make sure we have a more specific route to the VPN server so its
+        # Make sure we have a more specific route to each VPN server so its
         # traffic goes directly out via the IGW
-        ec2.CfnRoute(
-            self,
-            "Mesh VPN Endpoint Goes via IGW",
-            route_table_id=self.cfn_route_table.attr_route_table_id,
-            destination_cidr_block=cdk.Fn.join("", [vpn_endpoint_addr, "/32"]),
-            gateway_id=self.igw.attr_internet_gateway_id,
-        )
+        for i in range(len(wg_server_provided_conditions)):
+
+            vpn_server_route = ec2.CfnRoute(
+                self,
+                f"Mesh VPN Endpoint {i + 1} Goes via IGW",
+                route_table_id=self.cfn_route_table.attr_route_table_id,
+                destination_cidr_block=cdk.Fn.join("", [vpn_endpoint_addrs[i], "/32"]),
+                gateway_id=self.igw.attr_internet_gateway_id,
+            )
+            vpn_server_route.cfn_options.condition = wg_server_provided_conditions[i]
 
 
 class VPNRouterInstance(Construct):
@@ -188,6 +193,6 @@ class VPNRouterInstance(Construct):
             cdk.Fn.condition_if(
                 public_key_provided_condition.logical_id,
                 key_pair.ref,
-                "AWS::NoValue",
+                cdk.Aws.NO_VALUE,
             ),
         )

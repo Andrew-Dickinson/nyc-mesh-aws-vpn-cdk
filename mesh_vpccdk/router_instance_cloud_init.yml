@@ -14,7 +14,7 @@ package_upgrade: true
 
 write_files:
  - content: |
-    router id ${P2P_IP_Address_AWS_Side};
+    router id ${P2P_IP_Address_1_AWS_Side};
 
     protocol kernel {
             scan time 10;
@@ -45,45 +45,20 @@ write_files:
                     networks {
                             ${VPCCIDR};
                     };
-                    interface "wgmesh" {
-                            cost 15;
-                            type ptmp;
-                            neighbors {
-                                    ${P2P_IP_Address_Mesh_Side};
-                            };
-                    };
+    %INTERFACES_CONFIG_REPLACE_ME%
             };
     };
    path: /etc/bird/bird.conf
- - content: |
-    network:
-      version: 2
-      renderer: networkd
-      tunnels:
-        mode: wireguard
-        key: /etc/wireguard/private.key
-        addresses: [${P2P_IP_Address_AWS_Side}/31]
-        port: 51819
-        peers:
-          - keys:
-              public: ${WireGuardServerPublicKey}
-            allowed-ips: [0.0.0.0/0]
-            keepalive: 30
-            endpoint: ${WireGuardServerPublicIP}:${WireGuardServerPort}
-        routes:
-        - to: ${WireGuardServerPublicIP}/32
-          via: XXXX_VPC_ROUTER_ADDRESS_XXXX
-   path: /etc/netplan/70-wireguard-tunnel.yaml
-
+## wg_tunnel_config.yaml automatically gets inserted as additional file(s) here
 
 runcmd:
  - "echo \"net.ipv4.ip_forward = 1\" >> /etc/sysctl.conf"
  - "sudo sysctl -p"
  - "sudo wg genkey > /etc/wireguard/private.key"
+ - "sudo chmod 755 /etc/wireguard/"
  - "sudo chmod 644 /etc/wireguard/private.key"
- - "sudo awk -i inplace 'BEGIN{getline l < \"/etc/wireguard/private.key\"}/XXXX_AUTO_REPLACED_AT_INSTANCE_START_XXXX/{gsub(\"XXXX_AUTO_REPLACED_AT_INSTANCE_START_XXXX\",l)}1' /etc/wireguard/wgmesh.conf"
- - "VPC_ROUTER_ADDR=$(ipcalc -b 10.70.178.32/27 | awk '/HostMin/ {print $2}')"
- - "sudo sed -i -e \"s/XXXX_VPC_ROUTER_ADDRESS_XXXX/$VPC_ROUTER_ADDR/\" /etc/netplan/70-wireguard-tunnel.yaml"
+ - "VPC_ROUTER_ADDR=$(ipcalc -b ${VPCCIDR} | awk '/HostMin/ {print $2}')"
+ - "sudo sed -i -e \"s/XXXX_VPC_ROUTER_ADDRESS_XXXX/$VPC_ROUTER_ADDR/\" /etc/netplan/60-static-routes.yaml"
  - "sleep 60"
  - "sudo netplan apply"
  - "sudo systemctl restart bird"

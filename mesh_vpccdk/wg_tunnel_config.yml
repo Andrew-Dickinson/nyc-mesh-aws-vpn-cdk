@@ -1,0 +1,16 @@
+network:
+  version: 2
+  renderer: networkd
+  tunnels:
+    wg%i:
+      mode: wireguard
+      key: /etc/wireguard/private.key
+      addresses: [${P2P_IP_Address_%i_AWS_Side}/31]
+      port: 5181%i
+      peers:
+        - keys:
+            public: ${WireGuardServer%iPublicKey}
+          allowed-ips: [0.0.0.0/0]
+          keepalive: 30
+          endpoint: ${WireGuardServer%iPublicIP}:${WireGuardServer%iPort}
+

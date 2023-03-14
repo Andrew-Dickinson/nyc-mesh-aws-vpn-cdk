@@ -17,7 +17,7 @@ More pricing information is available on the [AWS website](https://aws.amazon.co
 
 ## Usage Instructions
 
-Open the pre-built CloudFormation template by using this [magic link](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://nycmesh-cloudformation-templates.s3.amazonaws.com/MeshVpcCDKStack.clean.template.json&stackName=NYCMeshVPCStack).
+Open the pre-built CloudFormation template by using this [magic link](https://nycmesh-cloudformation-templates.s3.amazonaws.com/MeshVpcCDKStack/cdk.out/MeshVpcCDKStack.clean.template.json).
 
 Fill in the parameters as requested, this will require setting up a new wireguard connection on the 
 NYCMesh WireGuard Server, and allocating static IP ranges for the VPC itself and the VPN tunnel.

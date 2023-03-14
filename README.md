@@ -1,58 +1,74 @@
 
-# Welcome to your CDK Python project!
+# Mesh VPC CDK Template
 
-This is a blank project for CDK development with Python.
+This repository uses AWS CDK code to generate a CloudFormation template which
+can be used to create an AWS VPC which connects to NYC Mesh via a WireGuard
+VPN connection.
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+## Cost
 
-This project is set up like a standard Python project.  The initialization
-process also creates a virtualenv within this project, stored under the `.venv`
-directory.  To create the virtualenv it assumes that there is a `python3`
-(or `python` for Windows) executable in your path with access to the `venv`
-package. If for any reason the automatic creation of the virtualenv fails,
-you can create the virtualenv manually.
+This template itself, which includes a small `t4g.nano` instance costs approximately $3.76 per month 
+to run idle in the `us-east-1` (N. Virginia) region. This can be reduced to around $2.47 per month
+by making a 1-year commitment and paying upfront. These costs will be higher (potentially much 
+higher) if you launch additional resources into this VPC. These numbers also don't include data 
+transfer costs ($0/GB sent from the mesh to AWS, $0.09/GB sent from AWS to the mesh).
 
-To manually create a virtualenv on MacOS and Linux:
+More pricing information is available on the [AWS website](https://aws.amazon.com/ec2/pricing/on-demand/)
 
+## Usage Instructions
+
+Open the pre-built CloudFormation template by using this [magic link](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://nycmesh-cloudformation-templates.s3.amazonaws.com/MeshVpcCDKStack.clean.template.json&stackName=NYCMeshVPCStack).
+
+Fill in the parameters as requested, this will require setting up a new wireguard connection on the 
+NYCMesh WireGuard Server, and allocating static IP ranges for the VPC itself and the VPN tunnel.
+
+Once the stack finishes deploying, look for a new parameter in the 
+[systems manager paramter store](https://console.aws.amazon.com/systems-manager/parameters) called
+`/MeshVPC/RouterInstancePublicKey`. Use the value of this parameter as the public key on the Mesh
+Wireguard server.
+
+Finally, you should be able to launch EC2 instances into the new VPC and directly connect to the mesh
+with no special configuration. Launch a new instance in the VPC and try to ping the core router at
+SN3 to confirm:
+```sh
+ping 10.69.7.13
 ```
-$ python3 -m venv .venv
+to confirm the connection.
+
+## De-provisioning
+
+The stack enables termination protection on the Router EC2 instance. To de-provision the resources
+created by this template, first disable termination protection on the router instance according to
+[AWS's instructions](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/terminating-instances.html#Using_ChangingDisableAPITermination), 
+then [delete the stack from the CloudFormation console](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-delete-stack.html).
+
+If you create additional resources in the VPC, such as EC2 instances, those resources will also 
+need to be terminated before the stack can be succesfully deleted.
+
+## Building the CloudFormation Template from Source
+
+Clone the repo with:
+```bash
+git clone https://github.com/Andrew-Dickinson/nycmesh-vpc-cdk
 ```
 
-After the init process completes and the virtualenv is created, you can use the following
-step to activate your virtualenv.
-
-```
-$ source .venv/bin/activate
-```
-
-If you are a Windows platform, you would activate the virtualenv like this:
-
-```
-% .venv\Scripts\activate.bat
-```
-
-Once the virtualenv is activated, you can install the required dependencies.
-
-```
-$ pip install -r requirements.txt
+Setup and activate a virtual environment:
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
 At this point you can now synthesize the CloudFormation template for this code.
-
 ```
-$ cdk synth
+cdk synth
 ```
 
-To add additional dependencies, for example other CDK libraries, just add
-them to your `setup.py` file and rerun the `pip install -r requirements.txt`
-command.
+The `app.py` script does some cleanup to make the stack nicer for direct deployment outside the CDK 
+CLI. This means end users can just directly use the generated template and don't have to 
+`cdk bootstrap`, etc. The cleaned template is written to 
+`cdk.out/MeshVpcCDKStack.clean.template.json`. You can examine it with:
+```sh
+less cdk.out/MeshVpcCDKStack.clean.template.json
+```
 
-## Useful commands
-
- * `cdk ls`          list all stacks in the app
- * `cdk synth`       emits the synthesized CloudFormation template
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk docs`        open CDK documentation
-
-Enjoy!

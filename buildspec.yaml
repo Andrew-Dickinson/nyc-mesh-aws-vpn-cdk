@@ -1,0 +1,11 @@
+phases:
+  install:
+    runtime-versions:
+      python: 3.9
+      nodejs: 14
+    commands:
+      - pip install -r requirements.txt
+      - npm install aws-cdk -g
+  build:
+    commands:
+      - cdk synth

@@ -11,6 +11,10 @@ phases:
   build:
     commands:
       - cdk synth
+  post_build:
+    commands:
+      - aws s3 cp cdk.out/MeshVpcCDKStack.clean.template.json  s3://nycmesh-cloudformation-templates/MeshVpcCDKStack/MeshVpcCDKStack.clean.template.json
+
 
 artifacts:
   files: cdk.out/*

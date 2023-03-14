@@ -1,3 +1,5 @@
+version: 0.2
+
 phases:
   install:
     runtime-versions:
@@ -9,3 +11,6 @@ phases:
   build:
     commands:
       - cdk synth
+
+artifacts:
+  files: cdk.out/*

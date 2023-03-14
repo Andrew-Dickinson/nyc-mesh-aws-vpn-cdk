@@ -29,7 +29,7 @@ Wireguard server.
 
 Finally, you should be able to launch EC2 instances into the new VPC and directly connect to the mesh
 with no special configuration. Launch a new instance in the VPC and try to ping the core router at
-SN3 to confirm:
+SN3
 ```sh
 ping 10.69.7.13
 ```

@@ -2,7 +2,7 @@
 # Mesh VPC CDK Template
 
 This repository uses AWS CDK code to generate a CloudFormation template which
-can be used to create an AWS VPC which connects to NYC Mesh via a WireGuard
+can be used to create an AWS VPC which connects to [NYC Mesh](https://nycmesh.net) via a WireGuard
 VPN connection.
 
 ## Cost

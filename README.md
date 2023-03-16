@@ -23,7 +23,7 @@ Fill in the parameters as requested, this will require setting up a new wireguar
 NYCMesh WireGuard Server, and allocating static IP ranges for the VPC itself and the VPN tunnel.
 
 Once the stack finishes deploying, look for a new parameter in the 
-[systems manager paramter store](https://console.aws.amazon.com/systems-manager/parameters) called
+[systems manager paramter store](https://us-east-1.console.aws.amazon.com/systems-manager/parameters) called
 `/MeshVPC/RouterInstancePublicKey`. Use the value of this parameter as the public key on the Mesh
 Wireguard server.
 
